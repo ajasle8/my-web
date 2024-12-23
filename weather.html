@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5-Day Weather Forecast</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1em 0;
+            text-align: center;
+        }
+        .forecast {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px;
+        }
+        .day {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px;
+            text-align: center;
+            width: 150px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .day h3 {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>5-Day Weather Forecast for Fargo, North Dakota</h1>
+    </header>
+    <div class="forecast" id="forecast"></div>
+
+    <script>
+        const apiKey = 'e512f43e466a0a25bcb508197d3688ac'; // Replace with your OpenWeatherMap API key
+        const city = 'Fargo';
+        const state = 'North Dakota';
+
+        async function fetchWeather() {
+            try {
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city},${state},US&units=imperial&appid=${apiKey}`);
+                const data = await response.json();
+
+                const forecastContainer = document.getElementById('forecast');
+                const dailyData = data.list.filter(item => item.dt_txt.includes('12:00:00'));
+
+                dailyData.forEach(day => {
+                    const date = new Date(day.dt * 1000);
+                    const options = { weekday: 'long', month: 'short', day: 'numeric' };
+                    const dateString = date.toLocaleDateString('en-US', options);
+
+                    forecastContainer.innerHTML += `
+                        <div class="day">
+                            <h3>${dateString}</h3>
+                            <p>Temp: ${Math.round(day.main.temp)}°F</p>
+                            <p>Weather: ${day.weather[0].description}</p>
+                            <p>Wind: ${day.wind.speed} mph</p>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+            }
+        }
+
+        fetchWeather();
+    </script>
+</body>
+</html>

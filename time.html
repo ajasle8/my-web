@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time and Date</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f4f4f4;
+        }
+        .time-container {
+            text-align: center;
+            background: #ffffff;
+            padding: 20px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin: 10px;
+        }
+        .time, .date {
+            font-size: 2em;
+            color: #333333;
+        }
+        .label {
+            font-size: 1.2em;
+            color: #555555;
+        }
+        .time-section {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="time-container">
+        <div class="label">Current Time and Date in Phoenix:</div>
+        <div id="phoenix-date" class="date">Loading...</div>
+        <div id="phoenix-time" class="time">Loading...</div>
+    </div>
+
+    <div class="time-container">
+        <div class="label">Current Time and Date in North Dakota:</div>
+        <div id="nd-date" class="date">Loading...</div>
+        <div id="nd-time" class="time">Loading...</div>
+    </div>
+
+    <script>
+        function updateDateTime() {
+            const timeOptions = {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+
+            const dateOptions = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+
+            // Phoenix Time
+            const phoenixTimeZone = 'America/Phoenix';
+            const phoenixNow = new Date();
+            const phoenixTimeFormatter = new Intl.DateTimeFormat('en-US', {
+                ...timeOptions,
+                timeZone: phoenixTimeZone
+            });
+            const phoenixDateFormatter = new Intl.DateTimeFormat('en-US', {
+                ...dateOptions,
+                timeZone: phoenixTimeZone
+            });
+
+            // North Dakota Time
+            const ndTimeZone = 'America/Chicago';
+            const ndNow = new Date();
+            const ndTimeFormatter = new Intl.DateTimeFormat('en-US', {
+                ...timeOptions,
+                timeZone: ndTimeZone
+            });
+            const ndDateFormatter = new Intl.DateTimeFormat('en-US', {
+                ...dateOptions,
+                timeZone: ndTimeZone
+            });
+
+            // Updating the time and date for Phoenix
+            document.getElementById('phoenix-time').textContent = phoenixTimeFormatter.format(phoenixNow);
+            document.getElementById('phoenix-date').textContent = phoenixDateFormatter.format(phoenixNow);
+
+            // Updating the time and date for North Dakota
+            document.getElementById('nd-time').textContent = ndTimeFormatter.format(ndNow);
+            document.getElementById('nd-date').textContent = ndDateFormatter.format(ndNow);
+        }
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+    </script>
+</body>
+</html>
