@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Games</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid black;
+        }
+        .game-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Classic Mini Games</h1>
+    <button onclick="startSnakeGame()">Play Snake</button>
+    <button onclick="startPongGame()">Play Pong</button>
+    <button onclick="startBrickBreaker()">Play Brick Breaker</button>
+    
+    <div class="game-container">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <script>
+        let canvas = document.getElementById("gameCanvas");
+        let ctx = canvas.getContext("2d");
+        let gameInterval;
+
+        // Snake Game
+        let box = 20;
+        let snake, direction, food;
+
+        function startSnakeGame() {
+            clearInterval(gameInterval);
+            snake = [{ x: 10 * box, y: 10 * box }];
+            direction = "RIGHT";
+            food = { x: Math.floor(Math.random() * 20) * box, y: Math.floor(Math.random() * 20) * box };
+            document.addEventListener("keydown", changeDirection);
+            gameInterval = setInterval(drawSnakeGame, 100);
+        }
+
+        function changeDirection(event) {
+            let key = event.keyCode;
+            if (key === 37 && direction !== "RIGHT") direction = "LEFT";
+            else if (key === 38 && direction !== "DOWN") direction = "UP";
+            else if (key === 39 && direction !== "LEFT") direction = "RIGHT";
+            else if (key === 40 && direction !== "UP") direction = "DOWN";
+        }
+
+        function drawSnakeGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, box, box);
+
+            for (let i = 0; i < snake.length; i++) {
+                ctx.fillStyle = i === 0 ? "green" : "lightgreen";
+                ctx.fillRect(snake[i].x, snake[i].y, box, box);
+            }
+
+            let headX = snake[0].x;
+            let headY = snake[0].y;
+
+            if (direction === "LEFT") headX -= box;
+            if (direction === "UP") headY -= box;
+            if (direction === "RIGHT") headX += box;
+            if (direction === "DOWN") headY += box;
+
+            if (headX === food.x && headY === food.y) {
+                food.x = Math.floor(Math.random() * 20) * box;
+                food.y = Math.floor(Math.random() * 20) * box;
+            } else {
+                snake.pop();
+            }
+
+            let newHead = { x: headX, y: headY };
+
+            if (
+                headX < 0 || headX >= canvas.width ||
+                headY < 0 || headY >= canvas.height ||
+                snake.some(segment => segment.x === headX && segment.y === headY)
+            ) {
+                alert("Game Over! Click 'Play Snake' to restart.");
+                clearInterval(gameInterval);
+                return;
+            }
+
+            snake.unshift(newHead);
+        }
+
+        // Pong Game
+        let paddleHeight = 10, paddleWidth = 75;
+        let ballRadius = 10;
+        let paddleX, ballX, ballY, dx, dy;
+
+        function startPongGame() {
+            clearInterval(gameInterval);
+            paddleX = (canvas.width - paddleWidth) / 2;
+            ballX = canvas.width / 2;
+            ballY = canvas.height - 30;
+            dx = 2;
+            dy = -2;
+            document.addEventListener("mousemove", movePaddle);
+            gameInterval = setInterval(drawPongGame, 10);
+        }
+
+        function movePaddle(event) {
+            let relativeX = event.clientX - canvas.offsetLeft;
+            if (relativeX > 0 && relativeX < canvas.width) {
+                paddleX = relativeX - paddleWidth / 2;
+            }
+        }
+
+        function drawPongGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "blue";
+            ctx.fillRect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+
+            if (ballX + dx > canvas.width - ballRadius || ballX + dx < ballRadius) dx = -dx;
+            if (ballY + dy < ballRadius) dy = -dy;
+            else if (ballY + dy > canvas.height - ballRadius) {
+                if (ballX > paddleX && ballX < paddleX + paddleWidth) dy = -dy;
+                else {
+                    alert("Game Over! Click 'Play Pong' to restart.");
+                    clearInterval(gameInterval);
+                }
+            }
+
+            ballX += dx;
+            ballY += dy;
+        }
+
+        // Brick Breaker Game
+        let bricks = [];
+        let brickRowCount = 3, brickColumnCount = 5;
+        let brickWidth = 75, brickHeight = 20, brickPadding = 10, brickOffsetTop = 30, brickOffsetLeft = 30;
+        let brickBallX, brickBallY, brickDx, brickDy;
+
+        function startBrickBreaker() {
+            clearInterval(gameInterval);
+            bricks = [];
+            for (let c = 0; c < brickColumnCount; c++) {
+                bricks[c] = [];
+                for (let r = 0; r < brickRowCount; r++) {
+                    bricks[c][r] = { x: 0, y: 0, status: 1 };
+                }
+            }
+            brickBallX = canvas.width / 2;
+            brickBallY = canvas.height - 30;
+            brickDx = 2;
+            brickDy = -2;
+            gameInterval = setInterval(drawBrickBreaker, 10);
+        }
+
+        function drawBricks() {
+            for (let c = 0; c < brickColumnCount; c++) {
+                for (let r = 0; r < brickRowCount; r++) {
+                    if (bricks[c][r].status === 1) {
+                        let brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
+                        let brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
+                        bricks[c][r].x = brickX;
+                        bricks[c][r].y = brickY;
+                        ctx.fillStyle = "purple";
+                        ctx.fillRect(brickX, brickY, brickWidth, brickHeight);
+                    }
+                }
+            }
+        }
+
+        function drawBrickBreaker() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBricks();
+            ctx.beginPath();
+            ctx.arc(brickBallX, brickBallY, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+
+            if (brickBallX + brickDx > canvas.width - ballRadius || brickBallX + brickDx < ballRadius) brickDx = -brickDx;
+            if (brickBallY + brickDy < ballRadius) brickDy = -brickDy;
+            brickBallX += brickDx;
+            brickBallY += brickDy;
+        }
+    </script>
+</body>
+</html>
